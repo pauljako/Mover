@@ -52,9 +52,6 @@ class Transitous {
                 .query("n", amount.toString()).get()
 
         val result = json.decodeFromString<DepartureList>(response.stringBody)
-
-        println(result)
-
         return result
     }
 }

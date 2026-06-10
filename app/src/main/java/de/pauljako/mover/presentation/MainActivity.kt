@@ -62,26 +62,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LineBadge(
-    line: String,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .padding(
-                horizontal = 8.dp,
-                vertical = 2.dp
-            )
-    ) {
-        Text(
-            text = line,
-            color = Color.White,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold
+fun LineBadge(trip: Trip) {
+    val line = trip.line
+    val backgroundColor = Color("#${trip.lineColor}".toColorInt())
+    Row {
+        Icon(
+            painterResource(trip.tripType.icon),
+            contentDescription = trip.tripType.name
         )
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(backgroundColor)
+                .padding(
+                    horizontal = 8.dp,
+                    vertical = 2.dp
+                )
+        ) {
+            Text(
+                text = line,
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 
@@ -133,29 +138,19 @@ fun DepartureListView(stationId: String) {
                         }
                     }
                     items(trips) { trip ->
-                        Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.trip, trip.line, trip.destination.name))
-                        }
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            Row {
-                                Icon(
-                                    painterResource(trip.tripType.icon),
-                                    contentDescription = trip.tripType.name
-                                )
-                                LineBadge(trip.line, Color("#${trip.lineColor}".toColorInt()))
-                            }
+                            LineBadge(trip)
                             Text(
                                 trip.destination.name,
                                 overflow = TextOverflow.Ellipsis,
                                 maxLines = 1
                             )
                             trip.place.departure?.let {
-                                Text(
-                                    Duration.between(
-                                        Instant.now(),
-                                        Instant.parse(it)
-                                    ).toMinutes().toString()
-                                )
+                                val duration = Duration.between(
+                                    Instant.now(),
+                                    Instant.parse(it)
+                                ).toMinutes()
+                                Text(if (duration == 0L) "Now" else "In ${duration}min")
                             }
                         }
                     }
