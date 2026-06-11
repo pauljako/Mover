@@ -19,6 +19,7 @@ enum class VehicleType(
 ) {
     REGIONAL_RAIL("Regional Train", R.drawable.directions_railway_24px),
     HIGHSPEED_RAIL("Long-Distance Train", R.drawable.directions_railway_24px),
+    LONG_DISTANCE("Long-Distance Train", R.drawable.directions_railway_24px),
     TRAM("Tram", R.drawable.directions_railway_24px),
     BUS("Bus", R.drawable.directions_bus_24px),
     SUBURBAN("S-Bahn", R.drawable.directions_subway_24px),

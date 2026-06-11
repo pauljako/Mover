@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation("com.github.pauljako.khttpclient:khttpclient:ae1493f81c")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+    implementation(libs.navigation3.ui)
+    implementation(libs.compose.navigation3)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
