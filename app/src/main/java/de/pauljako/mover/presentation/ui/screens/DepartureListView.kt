@@ -1,6 +1,8 @@
 package de.pauljako.mover.presentation.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -17,6 +20,7 @@ import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.ButtonDefaults
 import androidx.wear.compose.material3.Card
+import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.material3.EdgeButton
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ListHeaderDefaults
@@ -41,67 +45,78 @@ fun DepartureListView(stationId: String, stationName: String) {
         val scope = rememberCoroutineScope()
         var stationName by remember { mutableStateOf(stationName) }
         var trips by remember { mutableStateOf(emptyList<Trip>()) }
+        var isRefreshing by remember { mutableStateOf(true) }
 
         fun refresh() {
             scope.launch {
                 val departures = Transitous().getDepartures(stationId, 5)
                 stationName = departures.place.name
                 trips = departures.trips
+                isRefreshing = false
             }
         }
 
-        refresh()
-
-        AppScaffold {
-            val listState = rememberTransformingLazyColumnState()
-            val transformationSpec = rememberTransformationSpec()
-            ScreenScaffold(
-                scrollState = listState,
-                edgeButton = {
-                    EdgeButton(
-                        onClick = { refresh() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        ),
-                    ) {
-                        Text("Reload")
-                    }
-                },
-            ) { contentPadding -> // ScreenScaffold provides default padding; adjust as needed
-                TransformingLazyColumn(contentPadding = contentPadding, state = listState) {
-                    item {
-                        ListHeader(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .transformedHeight(this, transformationSpec)
-                                .minimumVerticalContentPadding(ListHeaderDefaults.minimumTopListContentPadding),
-                            transformation = SurfaceTransformation(transformationSpec),
+        if (isRefreshing) {
+            Box(
+                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            AppScaffold {
+                val listState = rememberTransformingLazyColumnState()
+                val transformationSpec = rememberTransformationSpec()
+                ScreenScaffold(
+                    scrollState = listState,
+                    edgeButton = {
+                        EdgeButton(
+                            onClick = {
+                                isRefreshing = true
+                                refresh()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            ),
                         ) {
-                            Text(text = stringResource(R.string.departures, stationName))
+                            Text("Reload")
                         }
-                    }
-                    items(trips) { trip ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .transformedHeight(this, transformationSpec),
-                            transformation = SurfaceTransformation(transformationSpec),
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
+                    },
+                ) { contentPadding -> // ScreenScaffold provides default padding; adjust as needed
+                    TransformingLazyColumn(contentPadding = contentPadding, state = listState) {
+                        item {
+                            ListHeader(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec)
+                                    .minimumVerticalContentPadding(ListHeaderDefaults.minimumTopListContentPadding),
+                                transformation = SurfaceTransformation(transformationSpec),
                             ) {
-                                LineBadge(trip)
-                                Text(
-                                    trip.destination.name,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1
-                                )
-                                trip.place.departure?.let {
-                                    val duration = Duration.between(
-                                        Instant.now(), Instant.parse(it)
-                                    ).toMinutes()
-                                    Text(if (duration == 0L) "Now" else "In ${duration}min")
+                                Text(text = stringResource(R.string.departures, stationName))
+                            }
+                        }
+                        items(trips) { trip ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .transformedHeight(this, transformationSpec),
+                                transformation = SurfaceTransformation(transformationSpec),
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    LineBadge(trip)
+                                    Text(
+                                        trip.destination.name,
+                                        overflow = TextOverflow.Ellipsis,
+                                        maxLines = 1
+                                    )
+                                    trip.place.departure?.let {
+                                        val duration = Duration.between(
+                                            Instant.now(), Instant.parse(it)
+                                        ).toMinutes()
+                                        Text(if (duration == 0L) "Now" else "In ${duration}min")
+                                    }
                                 }
                             }
                         }
@@ -109,5 +124,7 @@ fun DepartureListView(stationId: String, stationName: String) {
                 }
             }
         }
+
+        refresh()
     }
 }
