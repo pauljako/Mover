@@ -2,4 +2,5 @@
     <string name="app_name">Mover</string>
     <string name="stop_search">Search for a Stop</string>
     <string name="departures">Departures for %1$s</string>
+    <string name="search_results">Results for \"%1$s\"</string>
 </resources>

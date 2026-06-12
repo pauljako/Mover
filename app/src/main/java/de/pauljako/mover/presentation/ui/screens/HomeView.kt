@@ -9,7 +9,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -32,10 +31,8 @@ import androidx.wear.compose.material3.lazy.transformedHeight
 import androidx.wear.input.RemoteInputIntentHelper
 import androidx.wear.input.wearableExtender
 import de.pauljako.mover.R
-import de.pauljako.mover.presentation.Transitous
 import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.Screen
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -47,7 +44,6 @@ data class StoredStation(
 @Composable
 fun HomeView(sharedPref: SharedPreferences, backStack: SnapshotStateList<Any>) {
     MoverTheme {
-        val scope = rememberCoroutineScope()
         AppScaffold {
             val listState = rememberTransformingLazyColumnState()
             val transformationSpec = rememberTransformationSpec()
@@ -56,15 +52,7 @@ fun HomeView(sharedPref: SharedPreferences, backStack: SnapshotStateList<Any>) {
                     it.data?.let { data ->
                         val results: Bundle = RemoteInput.getResultsFromIntent(data)
                         val result = results.getCharSequence("stop_search") as String
-
-                        scope.launch {
-                            val stops = Transitous().searchStop(result)
-                            backStack.add(
-                                Screen.DepartureScreen(
-                                    stops.first().stopId, stops.first().name
-                                )
-                            )
-                        }
+                        backStack.add(Screen.SearchResultScreen(result))
                     }
                 }
             val cachedStations = Json.decodeFromString<MutableList<StoredStation>>(

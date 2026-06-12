@@ -29,10 +29,12 @@ import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.ui.screens.DepartureListView
 import de.pauljako.mover.presentation.ui.screens.HomeView
+import de.pauljako.mover.presentation.ui.screens.SearchResultView
 
 sealed interface Screen : NavKey {
     data object HomeScreen : Screen
     data class DepartureScreen(val stationId: String, val name: String) : Screen
+    data class SearchResultScreen(val query: String) : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -83,6 +85,10 @@ fun MoverApp(sharedPref: SharedPreferences) {
 
             entry<Screen.DepartureScreen> { key ->
                 DepartureListView(sharedPref, key.stationId, key.name)
+            }
+
+            entry<Screen.SearchResultScreen> {key ->
+                SearchResultView(backStack, key.query)
             }
 
         })
