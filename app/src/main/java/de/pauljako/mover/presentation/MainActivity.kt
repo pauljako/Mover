@@ -71,10 +71,10 @@ import java.time.Instant
 
 sealed interface Screen : NavKey {
     data object HomeScreen : Screen
-    data class DepartureScreen(val stationId: String) : Screen
+    data class DepartureScreen(val stationId: String, val name: String) : Screen
 }
 
-val stations = mapOf<String, String>(
+val stations = mapOf(
     "Stuttgart Hbf" to "at-Railway-Current-Reference-Data-2026_de:08111:6115:1:1",
     "Karlsruhe Hbf" to "de-DELFI_de:08212:90"
 )
@@ -130,7 +130,7 @@ fun MoverApp() {
             }
 
             entry<Screen.DepartureScreen> { key ->
-                DepartureListView(key.stationId)
+                DepartureListView(key.stationId, key.name)
             }
 
         }
@@ -140,6 +140,7 @@ fun MoverApp() {
 @Composable
 fun HomeView(backStack: SnapshotStateList<Any>) {
     MoverTheme {
+        val scope = rememberCoroutineScope()
         AppScaffold {
             val listState = rememberTransformingLazyColumnState()
             val transformationSpec = rememberTransformationSpec()
@@ -147,7 +148,17 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                 rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                     it.data?.let { data ->
                         val results: Bundle = RemoteInput.getResultsFromIntent(data)
-                        println(results.getCharSequence("stop_search"))
+                        val result = results.getCharSequence("stop_search") as String
+
+                        scope.launch {
+                            val stops = Transitous().searchStop(result)
+                            backStack.add(
+                                Screen.DepartureScreen(
+                                    stops.first().stopId,
+                                    stops.first().name
+                                )
+                            )
+                        }
                     }
                 }
             ScreenScaffold(
@@ -201,7 +212,8 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                                 stations[stationName]?.let {
                                     backStack.add(
                                         Screen.DepartureScreen(
-                                            it
+                                            it,
+                                            stationName
                                         )
                                     )
                                 }
@@ -221,10 +233,10 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
 }
 
 @Composable
-fun DepartureListView(stationId: String) {
+fun DepartureListView(stationId: String, stationName: String) {
     MoverTheme {
         val scope = rememberCoroutineScope()
-        var stationName by remember { mutableStateOf(stationId) }
+        var stationName by remember { mutableStateOf(stationName) }
         var trips by remember { mutableStateOf(emptyList<Trip>()) }
 
         fun refresh() {
