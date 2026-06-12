@@ -49,7 +49,7 @@ fun DepartureListView(stationId: String, stationName: String) {
 
         fun refresh() {
             scope.launch {
-                val departures = Transitous().getDepartures(stationId, 5)
+                val departures = Transitous().getDepartures(stationId, 10)
                 stationName = departures.place.name
                 trips = departures.trips
                 isRefreshing = false
