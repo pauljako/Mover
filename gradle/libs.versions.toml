@@ -11,6 +11,7 @@ activityCompose = "1.8.0"
 coreSplashscreen = "1.2.0"
 navigation3Ui = "1.1.2"
 composeNavigation3 = "1.6.2"
+wearInput = "1.2.0"
 
 [libraries]
 play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
@@ -29,6 +30,7 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Ui" }
 compose-navigation3 = { group = "androidx.wear.compose", name = "compose-navigation3", version.ref = "composeNavigation3" }
+wear-input = { group = "androidx.wear", name = "wear-input", version.ref = "wearInput" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

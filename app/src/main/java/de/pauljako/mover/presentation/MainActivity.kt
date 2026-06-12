@@ -5,21 +5,21 @@
 
 package de.pauljako.mover.presentation
 
+import android.app.RemoteInput
+import android.content.Intent
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -28,13 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,6 +49,7 @@ import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
 import androidx.wear.compose.material3.Card
 import androidx.wear.compose.material3.EdgeButton
+import androidx.wear.compose.material3.FilledTonalButton
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.ListHeaderDefaults
@@ -61,6 +60,9 @@ import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.lazy.rememberTransformationSpec
 import androidx.wear.compose.material3.lazy.transformedHeight
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
+import androidx.wear.input.RemoteInputIntentHelper
+import androidx.wear.input.RemoteInputIntentHelper.Companion.putRemoteInputsExtra
+import androidx.wear.input.wearableExtender
 import de.pauljako.mover.R
 import de.pauljako.mover.presentation.theme.MoverTheme
 import kotlinx.coroutines.launch
@@ -74,7 +76,7 @@ sealed interface Screen : NavKey {
 
 val stations = mapOf<String, String>(
     "Stuttgart Hbf" to "at-Railway-Current-Reference-Data-2026_de:08111:6115:1:1",
-    "Schwäbisch Gmünd" to "de-DELFI_de:08136:3077:1:15"
+    "Karlsruhe Hbf" to "de-DELFI_de:08212:90"
 )
 
 class MainActivity : ComponentActivity() {
@@ -141,6 +143,13 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
         AppScaffold {
             val listState = rememberTransformingLazyColumnState()
             val transformationSpec = rememberTransformationSpec()
+            val launcher =
+                rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                    it.data?.let { data ->
+                        val results: Bundle = RemoteInput.getResultsFromIntent(data)
+                        println(results.getCharSequence("stop_search"))
+                    }
+                }
             ScreenScaffold(
                 scrollState = listState,
             ) { contentPadding -> // ScreenScaffold provides default padding; adjust as needed
@@ -157,26 +166,27 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                         }
                     }
                     item {
-                        Row(
-                            modifier = Modifier.background(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                RoundedCornerShape(100)
-                            ).padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.directions_bus_24px),
-                                modifier = Modifier.align(Alignment.CenterVertically),
-                                contentDescription = "Search Icon"
+                        val searchLabel = stringResource(R.string.stop_search)
+                        FilledTonalButton(onClick = {
+                            val intent: Intent =
+                                RemoteInputIntentHelper.createActionRemoteInputIntent()
+                            val remoteInputs: List<RemoteInput> = listOf(
+                                RemoteInput.Builder("stop_search")
+                                    .setLabel(searchLabel)
+                                    .wearableExtender {
+                                        setEmojisAllowed(false)
+                                        setInputActionType(EditorInfo.IME_ACTION_SEARCH)
+                                    }
+                                    .build()
                             )
-                            Spacer(Modifier.width(16.dp))
-                            BasicTextField(
-                                state = rememberTextFieldState(),
-                                lineLimits = TextFieldLineLimits.SingleLine,
-                                modifier = Modifier.align(Alignment.CenterVertically),
-                                textStyle = TextStyle(
-                                    color = Color.White,
-                                ),
+
+                            putRemoteInputsExtra(intent, remoteInputs)
+
+                            launcher.launch(intent)
+                        }, transformation = SurfaceTransformation(transformationSpec)) {
+                            Icon(
+                                painterResource(R.drawable.search_24px),
+                                contentDescription = "Search Icon"
                             )
                         }
                     }
