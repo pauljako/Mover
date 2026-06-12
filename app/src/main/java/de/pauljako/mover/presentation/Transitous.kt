@@ -24,6 +24,7 @@ enum class VehicleType(
     LONG_DISTANCE("Long-Distance Train", R.drawable.directions_railway_24px),
     TRAM("Tram", R.drawable.directions_railway_24px),
     BUS("Bus", R.drawable.directions_bus_24px),
+    COACH("Coach", R.drawable.directions_bus_24px),
     SUBURBAN("S-Bahn", R.drawable.directions_subway_24px),
     SUBWAY("Subway", R.drawable.directions_subway_24px)
 }
