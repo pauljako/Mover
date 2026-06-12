@@ -1,15 +1,17 @@
 package de.pauljako.mover.presentation
 
 import de.pauljako.mover.R
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import work.socialhub.khttpclient.HttpRequest
 
 @Serializable
-data class Place(
+data class Place @OptIn(ExperimentalSerializationApi::class) constructor(
     val name: String,
-    val stopId: String,
+    @JsonNames("id") val stopId: String,
     val departure: String? = null
 )
 
@@ -53,6 +55,14 @@ class Transitous {
                 .query("n", amount.toString()).get()
 
         val result = json.decodeFromString<DepartureList>(response.stringBody)
+        return result
+    }
+
+    suspend fun searchStop(searchText: String): List<Place> {
+        val response = HttpRequest().url("$transitousEndpoint/api/v1/geocode").query("type", "STOP")
+            .query("text", searchText).get()
+
+        val result = json.decodeFromString<List<Place>>(response.stringBody)
         return result
     }
 }
