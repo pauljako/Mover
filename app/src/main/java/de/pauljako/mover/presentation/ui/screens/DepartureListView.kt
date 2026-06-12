@@ -1,5 +1,6 @@
 package de.pauljako.mover.presentation.ui.screens
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.core.content.edit
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
@@ -36,11 +38,12 @@ import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.LineBadge
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.Instant
 
 @Composable
-fun DepartureListView(stationId: String, stationName: String) {
+fun DepartureListView(sharedPref: SharedPreferences, stationId: String, stationName: String) {
     MoverTheme {
         val scope = rememberCoroutineScope()
         var stationName by remember { mutableStateOf(stationName) }
@@ -53,6 +56,17 @@ fun DepartureListView(stationId: String, stationName: String) {
                 stationName = departures.place.name
                 trips = departures.trips
                 isRefreshing = false
+                val cachedStations = Json.decodeFromString<MutableList<StoredStation>>(
+                    sharedPref.getString(
+                        "recent_stations", "[]"
+                    )!!
+                )
+                cachedStations.removeIf { it.id == departures.place.stopId }
+                cachedStations.add(0, StoredStation(departures.place.name, departures.place.stopId))
+                sharedPref.edit {
+                    putString("recent_stations", Json.encodeToString(cachedStations))
+                    apply()
+                }
             }
         }
 

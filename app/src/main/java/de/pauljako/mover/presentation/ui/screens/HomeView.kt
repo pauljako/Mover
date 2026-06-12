@@ -2,6 +2,7 @@ package de.pauljako.mover.presentation.ui.screens
 
 import android.app.RemoteInput
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,11 +35,17 @@ import de.pauljako.mover.R
 import de.pauljako.mover.presentation.Transitous
 import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.Screen
-import de.pauljako.mover.presentation.ui.stations
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class StoredStation(
+    val name: String, val id: String
+)
 
 @Composable
-fun HomeView(backStack: SnapshotStateList<Any>) {
+fun HomeView(sharedPref: SharedPreferences, backStack: SnapshotStateList<Any>) {
     MoverTheme {
         val scope = rememberCoroutineScope()
         AppScaffold {
@@ -60,6 +67,11 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                         }
                     }
                 }
+            val cachedStations = Json.decodeFromString<MutableList<StoredStation>>(
+                sharedPref.getString(
+                    "recent_stations", "[]"
+                )!!
+            )
             ScreenScaffold(
                 scrollState = listState,
             ) { contentPadding -> // ScreenScaffold provides default padding; adjust as needed
@@ -79,13 +91,13 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                         FilledTonalButton(onClick = {
                             val intent: Intent =
                                 RemoteInputIntentHelper.createActionRemoteInputIntent()
-                            val remoteInputs: List<RemoteInput> =
-                                listOf(
-                                    RemoteInput.Builder("stop_search").setLabel(searchLabel)
-                                        .wearableExtender {
-                                            setEmojisAllowed(false)
-                                            setInputActionType(EditorInfo.IME_ACTION_SEARCH)
-                                        }.build())
+                            val remoteInputs: List<RemoteInput> = listOf(
+                                RemoteInput.Builder("stop_search").setLabel(searchLabel)
+                                    .wearableExtender {
+                                        setEmojisAllowed(false)
+                                        setInputActionType(EditorInfo.IME_ACTION_SEARCH)
+                                    }.build()
+                            )
 
                             RemoteInputIntentHelper.putRemoteInputsExtra(
                                 intent, remoteInputs
@@ -99,7 +111,7 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                             )
                         }
                     }
-                    items(stations.keys.toList()) { stationName ->
+                    items(cachedStations) { station ->
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -107,17 +119,15 @@ fun HomeView(backStack: SnapshotStateList<Any>) {
                                 .minimumVerticalContentPadding(ButtonDefaults.minimumVerticalListContentPadding),
                             transformation = SurfaceTransformation(transformationSpec),
                             onClick = {
-                                stations[stationName]?.let {
-                                    backStack.add(
-                                        Screen.DepartureScreen(
-                                            it, stationName
-                                        )
+                                backStack.add(
+                                    Screen.DepartureScreen(
+                                        station.id, station.name
                                     )
-                                }
+                                )
                             },
                         ) {
                             Text(
-                                text = stationName,
+                                text = station.name,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )

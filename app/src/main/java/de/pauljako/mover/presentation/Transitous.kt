@@ -10,23 +10,32 @@ import work.socialhub.khttpclient.HttpRequest
 
 @Serializable
 data class Place @OptIn(ExperimentalSerializationApi::class) constructor(
-    val name: String,
-    @JsonNames("id") val stopId: String,
-    val departure: String? = null
+    val name: String, @JsonNames("id") val stopId: String, val departure: String? = null
 )
 
 enum class VehicleType(
-    val displayName: String,
-    val icon: Int
+    val displayName: String, val icon: Int
 ) {
-    REGIONAL_RAIL("Regional Train", R.drawable.directions_railway_24px),
-    HIGHSPEED_RAIL("Long-Distance Train", R.drawable.directions_railway_24px),
-    LONG_DISTANCE("Long-Distance Train", R.drawable.directions_railway_24px),
-    TRAM("Tram", R.drawable.directions_railway_24px),
-    BUS("Bus", R.drawable.directions_bus_24px),
-    COACH("Coach", R.drawable.directions_bus_24px),
-    SUBURBAN("S-Bahn", R.drawable.directions_subway_24px),
-    SUBWAY("Subway", R.drawable.directions_subway_24px)
+    REGIONAL_RAIL(
+        "Regional Train",
+        R.drawable.directions_railway_24px
+    ),
+    HIGHSPEED_RAIL(
+        "Long-Distance Train",
+        R.drawable.directions_railway_24px
+    ),
+    LONG_DISTANCE("Long-Distance Train", R.drawable.directions_railway_24px), TRAM(
+        "Tram",
+        R.drawable.directions_railway_24px
+    ),
+    BUS("Bus", R.drawable.directions_bus_24px), COACH(
+        "Coach",
+        R.drawable.directions_bus_24px
+    ),
+    SUBURBAN("S-Bahn", R.drawable.directions_subway_24px), SUBWAY(
+        "Subway",
+        R.drawable.directions_subway_24px
+    )
 }
 
 @Serializable
@@ -40,8 +49,7 @@ data class Trip(
 
 @Serializable
 data class DepartureList(
-    @SerialName("stopTimes") val trips: List<Trip>,
-    val place: Place
+    @SerialName("stopTimes") val trips: List<Trip>, val place: Place
 )
 
 class Transitous {

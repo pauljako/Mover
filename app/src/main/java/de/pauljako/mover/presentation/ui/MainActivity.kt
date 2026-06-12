@@ -1,5 +1,6 @@
 package de.pauljako.mover.presentation.ui
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,16 +35,12 @@ sealed interface Screen : NavKey {
     data class DepartureScreen(val stationId: String, val name: String) : Screen
 }
 
-val stations = mapOf(
-    "Stuttgart Hbf" to "at-Railway-Current-Reference-Data-2026_de:08111:6115:1:1",
-    "Karlsruhe Hbf" to "de-DELFI_de:08212:90"
-)
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sharedPref = this.getPreferences(MODE_PRIVATE)
         setContent {
-            MoverApp()
+            MoverApp(sharedPref)
         }
     }
 }
@@ -73,7 +70,7 @@ fun LineBadge(trip: Trip) {
 }
 
 @Composable
-fun MoverApp() {
+fun MoverApp(sharedPref: SharedPreferences) {
     val backStack = remember { mutableStateListOf<Any>(Screen.HomeScreen) }
 
     NavDisplay(
@@ -81,11 +78,11 @@ fun MoverApp() {
         sceneStrategies = listOf(rememberSwipeDismissableSceneStrategy()),
         entryProvider = entryProvider {
             entry<Screen.HomeScreen> {
-                HomeView(backStack)
+                HomeView(sharedPref, backStack)
             }
 
             entry<Screen.DepartureScreen> { key ->
-                DepartureListView(key.stationId, key.name)
+                DepartureListView(sharedPref, key.stationId, key.name)
             }
 
         })
