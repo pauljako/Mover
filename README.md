@@ -11,9 +11,9 @@ Features such as Routing or [Träwelling](https://traewelling.de) Check-In may a
 ## Current Feature-Set and ToDo
 
 - [x] Search for Stops
-    - [ ] Select Search Results
-- [ ] Show nearby Stops
-- [ ] Remember last Stops
+    - [x] Select Search Results
+- [x] Show nearby Stops
+- [x] Remember last Stops
 - [x] Show departures of Stop
 - [ ] Detailed Route View (See entire Journey, Map, etc.)
 
