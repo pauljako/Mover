@@ -25,9 +25,12 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.wear.compose.material3.Icon
 import androidx.wear.compose.material3.Text
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.ui.screens.DepartureListView
 import de.pauljako.mover.presentation.ui.screens.HomeView
+import de.pauljako.mover.presentation.ui.screens.LocationResultView
 import de.pauljako.mover.presentation.ui.screens.SearchResultView
 import de.pauljako.mover.presentation.util.Storage
 
@@ -35,6 +38,7 @@ sealed interface Screen : NavKey {
     data object HomeScreen : Screen
     data class DepartureScreen(val stationId: String, val name: String) : Screen
     data class SearchResultScreen(val query: String) : Screen
+    data object LocationResultScreen : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -42,8 +46,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val sharedPref = this.getPreferences(MODE_PRIVATE)
         val storage = Storage(sharedPref)
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         setContent {
-            MoverApp(storage)
+            MoverApp(fusedLocationClient, storage)
         }
     }
 }
@@ -73,7 +78,7 @@ fun LineBadge(trip: Trip) {
 }
 
 @Composable
-fun MoverApp(storage: Storage) {
+fun MoverApp(fusedLocationClient: FusedLocationProviderClient, storage: Storage) {
     val backStack = remember { mutableStateListOf<Any>(Screen.HomeScreen) }
 
     NavDisplay(
@@ -90,6 +95,10 @@ fun MoverApp(storage: Storage) {
 
             entry<Screen.SearchResultScreen> { key ->
                 SearchResultView(backStack, key.query)
+            }
+
+            entry<Screen.LocationResultScreen> {
+                LocationResultView(fusedLocationClient, backStack)
             }
 
         })

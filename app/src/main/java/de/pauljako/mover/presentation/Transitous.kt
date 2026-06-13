@@ -17,24 +17,19 @@ enum class VehicleType(
     val displayName: String, val icon: Int
 ) {
     REGIONAL_RAIL(
-        "Regional Train",
-        R.drawable.directions_railway_24px
+        "Regional Train", R.drawable.directions_railway_24px
     ),
     HIGHSPEED_RAIL(
-        "Long-Distance Train",
-        R.drawable.directions_railway_24px
+        "Long-Distance Train", R.drawable.directions_railway_24px
     ),
     LONG_DISTANCE("Long-Distance Train", R.drawable.directions_railway_24px), TRAM(
-        "Tram",
-        R.drawable.directions_railway_24px
+        "Tram", R.drawable.directions_railway_24px
     ),
     BUS("Bus", R.drawable.directions_bus_24px), COACH(
-        "Coach",
-        R.drawable.directions_bus_24px
+        "Coach", R.drawable.directions_bus_24px
     ),
     SUBURBAN("S-Bahn", R.drawable.directions_subway_24px), SUBWAY(
-        "Subway",
-        R.drawable.directions_subway_24px
+        "Subway", R.drawable.directions_subway_24px
     )
 }
 
@@ -70,6 +65,15 @@ class Transitous {
     suspend fun searchStop(searchText: String): List<Place> {
         val response = HttpRequest().url("$transitousEndpoint/api/v1/geocode").query("type", "STOP")
             .query("text", searchText).get()
+
+        val result = json.decodeFromString<List<Place>>(response.stringBody)
+        return result
+    }
+
+    suspend fun searchLocationStop(latitude: String, longitude: String): List<Place> {
+        val response =
+            HttpRequest().url("$transitousEndpoint/api/v1/reverse-geocode").query("type", "STOP")
+                .query("place", "$latitude,$longitude").get()
 
         val result = json.decodeFromString<List<Place>>(response.stringBody)
         return result
