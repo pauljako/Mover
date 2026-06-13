@@ -1,6 +1,5 @@
 package de.pauljako.mover.presentation.ui
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -89,7 +88,7 @@ fun MoverApp(storage: Storage) {
                 DepartureListView(storage, key.stationId, key.name)
             }
 
-            entry<Screen.SearchResultScreen> {key ->
+            entry<Screen.SearchResultScreen> { key ->
                 SearchResultView(backStack, key.query)
             }
 

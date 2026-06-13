@@ -24,6 +24,9 @@ class Storage(val sharedPref: SharedPreferences) {
         val cachedStations = getCachedStations()
         cachedStations.removeIf { it.id == stop.stopId }
         cachedStations.add(0, StoredStation(stop.name, stop.stopId))
+        while (cachedStations.size > 10) {
+            cachedStations.removeAt(cachedStations.lastIndex)
+        }
         sharedPref.edit {
             putString("recent_stations", Json.encodeToString(cachedStations))
             apply()

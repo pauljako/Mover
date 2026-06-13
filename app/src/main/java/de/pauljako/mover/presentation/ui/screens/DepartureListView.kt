@@ -1,6 +1,5 @@
 package de.pauljako.mover.presentation.ui.screens
 
-import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.core.content.edit
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
@@ -39,7 +37,6 @@ import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.LineBadge
 import de.pauljako.mover.presentation.util.Storage
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.Instant
 
