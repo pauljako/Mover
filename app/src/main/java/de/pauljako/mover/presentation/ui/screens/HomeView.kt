@@ -2,7 +2,6 @@ package de.pauljako.mover.presentation.ui.screens
 
 import android.app.RemoteInput
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,16 +32,11 @@ import androidx.wear.input.wearableExtender
 import de.pauljako.mover.R
 import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.Screen
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import de.pauljako.mover.presentation.util.Storage
 
-@Serializable
-data class StoredStation(
-    val name: String, val id: String
-)
 
 @Composable
-fun HomeView(sharedPref: SharedPreferences, backStack: SnapshotStateList<Any>) {
+fun HomeView(storage: Storage, backStack: SnapshotStateList<Any>) {
     MoverTheme {
         AppScaffold {
             val listState = rememberTransformingLazyColumnState()
@@ -55,11 +49,7 @@ fun HomeView(sharedPref: SharedPreferences, backStack: SnapshotStateList<Any>) {
                         backStack.add(Screen.SearchResultScreen(result))
                     }
                 }
-            val cachedStations = Json.decodeFromString<MutableList<StoredStation>>(
-                sharedPref.getString(
-                    "recent_stations", "[]"
-                )!!
-            )
+            val cachedStations = storage.getCachedStations()
             ScreenScaffold(
                 scrollState = listState,
             ) { contentPadding -> // ScreenScaffold provides default padding; adjust as needed

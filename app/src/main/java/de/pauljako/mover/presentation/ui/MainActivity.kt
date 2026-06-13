@@ -30,6 +30,7 @@ import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.ui.screens.DepartureListView
 import de.pauljako.mover.presentation.ui.screens.HomeView
 import de.pauljako.mover.presentation.ui.screens.SearchResultView
+import de.pauljako.mover.presentation.util.Storage
 
 sealed interface Screen : NavKey {
     data object HomeScreen : Screen
@@ -41,8 +42,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val sharedPref = this.getPreferences(MODE_PRIVATE)
+        val storage = Storage(sharedPref)
         setContent {
-            MoverApp(sharedPref)
+            MoverApp(storage)
         }
     }
 }
@@ -72,7 +74,7 @@ fun LineBadge(trip: Trip) {
 }
 
 @Composable
-fun MoverApp(sharedPref: SharedPreferences) {
+fun MoverApp(storage: Storage) {
     val backStack = remember { mutableStateListOf<Any>(Screen.HomeScreen) }
 
     NavDisplay(
@@ -80,11 +82,11 @@ fun MoverApp(sharedPref: SharedPreferences) {
         sceneStrategies = listOf(rememberSwipeDismissableSceneStrategy()),
         entryProvider = entryProvider {
             entry<Screen.HomeScreen> {
-                HomeView(sharedPref, backStack)
+                HomeView(storage, backStack)
             }
 
             entry<Screen.DepartureScreen> { key ->
-                DepartureListView(sharedPref, key.stationId, key.name)
+                DepartureListView(storage, key.stationId, key.name)
             }
 
             entry<Screen.SearchResultScreen> {key ->

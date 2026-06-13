@@ -37,13 +37,14 @@ import de.pauljako.mover.presentation.Transitous
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.theme.MoverTheme
 import de.pauljako.mover.presentation.ui.LineBadge
+import de.pauljako.mover.presentation.util.Storage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.Instant
 
 @Composable
-fun DepartureListView(sharedPref: SharedPreferences, stationId: String, stationName: String) {
+fun DepartureListView(storage: Storage, stationId: String, stationName: String) {
     MoverTheme {
         val scope = rememberCoroutineScope()
         var stationName by remember { mutableStateOf(stationName) }
@@ -56,17 +57,7 @@ fun DepartureListView(sharedPref: SharedPreferences, stationId: String, stationN
                 stationName = departures.place.name
                 trips = departures.trips
                 isRefreshing = false
-                val cachedStations = Json.decodeFromString<MutableList<StoredStation>>(
-                    sharedPref.getString(
-                        "recent_stations", "[]"
-                    )!!
-                )
-                cachedStations.removeIf { it.id == departures.place.stopId }
-                cachedStations.add(0, StoredStation(departures.place.name, departures.place.stopId))
-                sharedPref.edit {
-                    putString("recent_stations", Json.encodeToString(cachedStations))
-                    apply()
-                }
+                storage.addCachedStation(departures.place)
             }
         }
 
