@@ -10,7 +10,10 @@ import work.socialhub.khttpclient.HttpRequest
 
 @Serializable
 data class Place @OptIn(ExperimentalSerializationApi::class) constructor(
-    val name: String, @JsonNames("id") val stopId: String, val departure: String? = null
+    val name: String,
+    @JsonNames("id") val stopId: String,
+    val departure: String? = null,
+    val arrival: String? = null,
 )
 
 enum class VehicleType(
@@ -35,9 +38,12 @@ enum class VehicleType(
 
 @Serializable
 data class Trip(
-    val place: Place,
+    val place: Place? = null,
+    val tripId: String,
+    val intermediateStops: List<Place> = emptyList(),
     @SerialName("mode") val tripType: VehicleType,
     @SerialName("tripTo") val destination: Place,
+    @SerialName("tripFrom") val start: Place,
     @SerialName("displayName") val line: String,
     @SerialName("routeColor") val lineColor: String = "000000"
 )
@@ -45,6 +51,11 @@ data class Trip(
 @Serializable
 data class DepartureList(
     @SerialName("stopTimes") val trips: List<Trip>, val place: Place
+)
+
+@Serializable
+data class Itinerary(
+    val legs: List<Trip>
 )
 
 class Transitous {
@@ -59,6 +70,14 @@ class Transitous {
                 .query("n", amount.toString()).get()
 
         val result = json.decodeFromString<DepartureList>(response.stringBody)
+        return result
+    }
+
+    suspend fun getTrip(tripId: String): Itinerary {
+        val response = HttpRequest().url("$transitousEndpoint/api/v6/trip").query("tripId", tripId)
+            .query("withScheduledSkippedStops", "false").query("detailedLegs", "false").get()
+
+        val result = json.decodeFromString<Itinerary>(response.stringBody)
         return result
     }
 

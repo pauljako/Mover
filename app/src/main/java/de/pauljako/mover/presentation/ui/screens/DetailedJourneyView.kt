@@ -2,19 +2,25 @@ package de.pauljako.mover.presentation.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
@@ -35,30 +41,24 @@ import de.pauljako.mover.R
 import de.pauljako.mover.presentation.Transitous
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.theme.MoverTheme
-import de.pauljako.mover.presentation.ui.LineBadge
-import de.pauljako.mover.presentation.ui.Screen
-import de.pauljako.mover.presentation.util.Storage
 import kotlinx.coroutines.launch
-import java.time.Duration
 import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun DepartureListView(
-    storage: Storage, backStack: SnapshotStateList<Any>, stationId: String, stationName: String
-) {
+fun DetailedJourneyView(tripId: String) {
     MoverTheme {
         val scope = rememberCoroutineScope()
-        var stationName by remember { mutableStateOf(stationName) }
-        var trips by remember { mutableStateOf(emptyList<Trip>()) }
+        var legs by remember { mutableStateOf(emptyList<Trip>()) }
         var isRefreshing by remember { mutableStateOf(true) }
 
         fun refresh() {
             scope.launch {
-                val departures = Transitous().getDepartures(stationId, 10)
-                stationName = departures.place.name
-                trips = departures.trips
+                val itinerary = Transitous().getTrip(tripId)
+                legs = itinerary.legs
                 isRefreshing = false
-                storage.addCachedStation(departures.place)
             }
         }
 
@@ -98,30 +98,54 @@ fun DepartureListView(
                                     .minimumVerticalContentPadding(ListHeaderDefaults.minimumTopListContentPadding),
                                 transformation = SurfaceTransformation(transformationSpec),
                             ) {
-                                Text(text = stringResource(R.string.departures, stationName))
+                                Text(text = stringResource(R.string.journey))
                             }
                         }
-                        items(trips) { trip ->
+                        items(legs) { leg ->
+                            val allStops = mutableListOf(leg.start)
+                            allStops.addAll(leg.intermediateStops)
+                            allStops.add(leg.destination)
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .transformedHeight(this, transformationSpec),
                                 transformation = SurfaceTransformation(transformationSpec),
-                                onClick = { backStack.add(Screen.DetailedJourneyScreen(trip.tripId)) }) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    LineBadge(trip)
-                                    Text(
-                                        trip.destination.name,
-                                        overflow = TextOverflow.Ellipsis,
-                                        maxLines = 1
-                                    )
-                                    trip.place?.departure?.let {
-                                        val duration = Duration.between(
-                                            Instant.now(), Instant.parse(it)
-                                        ).toMinutes()
-                                        Text(if (duration == 0L) "Now" else "In ${duration}min")
+                            ) {
+                                Column {
+                                    for (stop in allStops) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(bottom = 6.dp)
+                                        ) {
+                                            Text(
+                                                stop.name,
+                                                modifier = Modifier.weight(1f),
+                                                overflow = TextOverflow.MiddleEllipsis,
+                                                maxLines = 2
+                                            )
+                                            val departureTime =
+                                                OffsetDateTime.parse(stop.departure ?: stop.arrival)
+                                                    .format(
+                                                        DateTimeFormatter.ofPattern("HH:mm")
+                                                            .withZone(
+                                                                ZoneId.systemDefault()
+                                                            )
+                                                    )
+                                            val color =
+                                                (if (Instant.parse(stop.departure ?: stop.arrival)
+                                                        .isBefore(Instant.now())
+                                                ) Color.Gray else Color.White)
+
+                                            Spacer(Modifier.width(4.dp))
+
+                                            Text(
+                                                departureTime,
+                                                textAlign = TextAlign.Right,
+                                                maxLines = 1,
+                                                color = color
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -32,6 +32,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.ui.screens.DepartureListView
+import de.pauljako.mover.presentation.ui.screens.DetailedJourneyView
 import de.pauljako.mover.presentation.ui.screens.HomeView
 import de.pauljako.mover.presentation.ui.screens.LocationResultView
 import de.pauljako.mover.presentation.ui.screens.SearchResultView
@@ -42,6 +43,7 @@ sealed interface Screen : NavKey {
     data class DepartureScreen(val stationId: String, val name: String) : Screen
     data class SearchResultScreen(val query: String) : Screen
     data object LocationResultScreen : Screen
+    data class DetailedJourneyScreen(val tripId: String) : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -95,7 +97,11 @@ fun MoverApp(
             }
 
             entry<Screen.DepartureScreen> { key ->
-                DepartureListView(storage, key.stationId, key.name)
+                DepartureListView(storage, backStack, key.stationId, key.name)
+            }
+
+            entry<Screen.DetailedJourneyScreen> { key ->
+                DetailedJourneyView(key.tripId)
             }
 
             entry<Screen.SearchResultScreen> { key ->
