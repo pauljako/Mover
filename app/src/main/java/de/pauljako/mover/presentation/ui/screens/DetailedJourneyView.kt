@@ -1,5 +1,6 @@
 package de.pauljako.mover.presentation.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,7 @@ import de.pauljako.mover.R
 import de.pauljako.mover.presentation.Transitous
 import de.pauljako.mover.presentation.Trip
 import de.pauljako.mover.presentation.theme.MoverTheme
+import de.pauljako.mover.presentation.ui.LineBadge
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -48,7 +51,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun DetailedJourneyView(tripId: String) {
+fun DetailedJourneyView(tripId: String, highlightedStops: List<String> = emptyList()) {
     MoverTheme {
         val scope = rememberCoroutineScope()
         var legs by remember { mutableStateOf(emptyList<Trip>()) }
@@ -98,7 +101,22 @@ fun DetailedJourneyView(tripId: String) {
                                     .minimumVerticalContentPadding(ListHeaderDefaults.minimumTopListContentPadding),
                                 transformation = SurfaceTransformation(transformationSpec),
                             ) {
-                                Text(text = stringResource(R.string.journey))
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Text(
+                                        text = stringResource(R.string.journey),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        legs.forEach {
+                                            LineBadge(
+                                                it, false
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                         items(legs) { leg ->
@@ -112,6 +130,17 @@ fun DetailedJourneyView(tripId: String) {
                                 transformation = SurfaceTransformation(transformationSpec),
                             ) {
                                 Column {
+                                    Row {
+                                        LineBadge(leg, false)
+                                        Text(
+                                            stringResource(
+                                                R.string.to_stop, leg.destination.name
+                                            ),
+                                            overflow = TextOverflow.Ellipsis,
+                                            maxLines = 1,
+                                            modifier = Modifier.padding(start = 4.dp)
+                                        )
+                                    }
                                     for (stop in allStops) {
                                         Row(
                                             modifier = Modifier
@@ -122,7 +151,8 @@ fun DetailedJourneyView(tripId: String) {
                                                 stop.name,
                                                 modifier = Modifier.weight(1f),
                                                 overflow = TextOverflow.MiddleEllipsis,
-                                                maxLines = 2
+                                                maxLines = 2,
+                                                fontWeight = (if (stop.stopId in highlightedStops) FontWeight.Bold else FontWeight.Normal)
                                             )
                                             val departureTime =
                                                 OffsetDateTime.parse(stop.departure ?: stop.arrival)

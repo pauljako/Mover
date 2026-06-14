@@ -5,4 +5,5 @@
     <string name="journey">Entire Journey</string>
     <string name="departures">Departures for %1$s</string>
     <string name="search_results">Results for \"%1$s\"</string>
+    <string name="to_stop">to %1$s</string>
 </resources>

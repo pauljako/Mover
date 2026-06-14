@@ -43,7 +43,9 @@ sealed interface Screen : NavKey {
     data class DepartureScreen(val stationId: String, val name: String) : Screen
     data class SearchResultScreen(val query: String) : Screen
     data object LocationResultScreen : Screen
-    data class DetailedJourneyScreen(val tripId: String) : Screen
+    data class DetailedJourneyScreen(
+        val tripId: String, val highlightedStops: List<String> = emptyList()
+    ) : Screen
 }
 
 class MainActivity : ComponentActivity() {
@@ -59,13 +61,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LineBadge(trip: Trip) {
+fun LineBadge(trip: Trip, withVehicleIcon: Boolean = true) {
     val line = trip.line
     val backgroundColor = Color("#${trip.lineColor}".toColorInt())
     Row {
-        Icon(
-            painterResource(trip.tripType.icon), contentDescription = trip.tripType.name
-        )
+        if (withVehicleIcon) {
+            Icon(
+                painterResource(trip.tripType.icon), contentDescription = trip.tripType.name
+            )
+        }
 
         Box(
             modifier = Modifier
@@ -101,7 +105,7 @@ fun MoverApp(
             }
 
             entry<Screen.DetailedJourneyScreen> { key ->
-                DetailedJourneyView(key.tripId)
+                DetailedJourneyView(key.tripId, key.highlightedStops)
             }
 
             entry<Screen.SearchResultScreen> { key ->

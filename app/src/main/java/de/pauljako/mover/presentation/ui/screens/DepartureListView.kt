@@ -107,7 +107,13 @@ fun DepartureListView(
                                     .fillMaxWidth()
                                     .transformedHeight(this, transformationSpec),
                                 transformation = SurfaceTransformation(transformationSpec),
-                                onClick = { backStack.add(Screen.DetailedJourneyScreen(trip.tripId)) }) {
+                                onClick = {
+                                    backStack.add(
+                                        Screen.DetailedJourneyScreen(
+                                            trip.tripId, listOf(trip.place!!.stopId)
+                                        )
+                                    )
+                                }) {
                                 Column(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
