@@ -2,6 +2,8 @@
 
 ### A Public Transit App for WearOS
 
+#### [Video Demo](https://vimeo.com/1203467818)
+
 ## Overview
 
 Mover is an Open-Source App for WearOS, Google's Watch Operating System.
